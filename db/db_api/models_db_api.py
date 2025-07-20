@@ -2,13 +2,13 @@ from db.db_api import base as base_db_api
 from db.models import models
 
 
-class RobotStateDBAPI(base_db_api.DBApiBase):
-    model = models.RobotState
+class RoverStateDBAPI(base_db_api.DBApiBase):
+    model = models.RoverState
 
 
-class CommandLogDBAPI(base_db_api.DBApiBase):
-    model = models.CommandLog
+class CommandInputDBAPI(base_db_api.DBApiBase):
+    model = models.CommandInput
 
 
-class ObstaclesDBAPI(base_db_api.DBApiBase):
-    model = models.Obstacles
+class ObstacleDBAPI(base_db_api.DBApiBase):
+    model = models.Obstacle

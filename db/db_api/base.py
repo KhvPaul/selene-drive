@@ -375,6 +375,11 @@ class DBApiBase(BaseDbApiHandler):
             )
 
     @classmethod
+    async def exists(cls, session_cls: sa_asyncio.AsyncSession, condition: list, many: bool = False) -> list[bool] | bool:
+        async with session_cls() as session:
+            return await cls.exists_session(session=session, condition=condition, many=many)
+
+    @classmethod
     async def exists_session(cls, session, condition: list, many: bool = False) -> list[bool] | bool:
         stmt = future.select(exists(cls.model.id)).where(*condition)
         res = await cls._execute(session, stmt)
