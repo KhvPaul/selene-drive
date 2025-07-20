@@ -1,7 +1,7 @@
 import contextlib
-import httpx
 from functools import wraps
 
+import httpx
 from fastapi import FastAPI
 
 

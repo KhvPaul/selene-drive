@@ -16,13 +16,13 @@ from sqlalchemy import (
     union,
     update,
 )
+from sqlalchemy import orm as so
+from sqlalchemy.dialects import postgresql as pg_dialect
 from sqlalchemy.ext import asyncio as sa_asyncio
 from sqlalchemy.ext.declarative import DeclarativeMeta
-from sqlalchemy import orm as so
 from sqlalchemy.sql import Subquery
 from sqlalchemy.sql.elements import Case
 from sqlalchemy.sql.expression import BinaryExpression
-from sqlalchemy.dialects import postgresql as pg_dialect
 
 from logger import logger
 from utils import exceptions as custom_exc

@@ -1,10 +1,10 @@
 from typing import Annotated
 
 from fastapi import Depends
-from sqlalchemy.orm import Session
 from sqlalchemy.ext import asyncio as sa_asyncio
+from sqlalchemy.orm import Session
 
-from db.session import get_sync_postgres_session, get_async_postgres_session
+from db.session import get_async_postgres_session, get_sync_postgres_session
 
 
 def get_db() -> Session:

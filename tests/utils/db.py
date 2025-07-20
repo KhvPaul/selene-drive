@@ -3,13 +3,12 @@ import os
 import uuid
 
 import asyncpg
-from alembic import command
-from alembic import config
+from alembic import command, config
 from sqlalchemy.ext import asyncio as sa_asyncio
 from testcontainers import postgres
 
-from db import models
 from config import settings
+from db import models
 from ..utils import helpers as test_helpers
 
 

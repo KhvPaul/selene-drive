@@ -2,8 +2,8 @@ import datetime
 import uuid
 
 import sqlalchemy as sa
-from sqlalchemy.dialects import postgresql as pg
 from sqlalchemy import orm as so
+from sqlalchemy.dialects import postgresql as pg
 
 
 class PkModelMixin:

@@ -34,6 +34,7 @@ factory-boy = "^3.3.3"
 
 
 [tool.ruff]
+target-version = "py313"
 # Exclude a variety of commonly ignored directories.
 exclude = [
     ".git",
@@ -100,8 +101,8 @@ ignore = [
     "B010"
 ]
 
-fixable = []
-unfixable = ["ALL"]
+fixable = ["ALL"]
+unfixable = []
 extend-safe-fixes = []
 extend-unsafe-fixes = []
 

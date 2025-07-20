@@ -1,7 +1,7 @@
 import datetime
 import enum
-import uuid
 import typing as t
+import uuid
 
 from pydantic import BaseModel
 

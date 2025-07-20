@@ -1,9 +1,9 @@
 import contextlib
 
 from sqlalchemy import create_engine
-from sqlalchemy.orm import sessionmaker
 from sqlalchemy.ext import asyncio as sa_asyncio
 from sqlalchemy.future import Engine
+from sqlalchemy.orm import sessionmaker
 from sqlalchemy.pool import AsyncAdaptedQueuePool, QueuePool
 
 from config import settings

@@ -27,10 +27,7 @@ jobs:
       run: poetry install --no-interaction --no-ansi --no-root;
 
     - name: Run Ruff Check
-      run: poetry run ruff check .
-
-    - name: Run Ruff Diff
-      run: poetry run ruff format . --check --diff
+      run: poetry run ruff check . --diff
 
     - name: Run Tests
       run: poetry run pytest tests

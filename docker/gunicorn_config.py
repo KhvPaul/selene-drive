@@ -1,6 +1,5 @@
 from config import settings
 
-
 workers = 1
 worker_class = "main.CustomUvicornWorker"
 # worker_class = "uvicorn.workers.UvicornWorker"
