@@ -33,3 +33,7 @@ class NotFoundException(HTTPException):
             status_code=http.HTTPStatus.NOT_FOUND,
             detail="Not found",
         )
+
+
+class RoverLandedInObstacleException(Exception):
+    ...

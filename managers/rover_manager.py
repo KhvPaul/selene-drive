@@ -4,9 +4,19 @@ from sqlalchemy.ext import asyncio as sa_asyncio
 from db import models
 from managers.base_manager import BaseModelManager
 from schemas import enums
+from utils import exceptions as custom_exc
 
 
 class RoverManager(BaseModelManager):
+
+    @classmethod
+    async def initialize_obstacles(
+        cls, session_cls: so.sessionmaker[sa_asyncio.AsyncSession], data: tuple[int, int]
+    ) -> None:
+        return await RoverManager._obstacle_db_api.bulk_create(
+            session_cls=session_cls,
+            data=[{"longitude": longitude, "latitude": latitude} for longitude, latitude in data],
+        )
 
     @classmethod
     async def initialize_rover(
@@ -16,6 +26,13 @@ class RoverManager(BaseModelManager):
         latitude: int,
         direction: enums.Direction,
     ) -> models.RoverState:
+        if cls._obstacle_db_api.retrieve(
+            session_cls=session_cls,
+            condition=(
+                cls._obstacle_db_api.model.longitude == longitude, cls._obstacle_db_api.model.latitude == latitude
+            )
+        ):
+            raise custom_exc.RoverLandedInObstacleException()
         return await cls._rover_db_api.create(
             session_cls=session_cls,
             data={"longitude": longitude, "latitude": latitude, "direction": direction},

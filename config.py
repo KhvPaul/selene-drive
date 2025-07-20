@@ -62,5 +62,7 @@ class Settings(BaseSettings):
     ROVER_INITIAL_LONGITUDE: int
     ROVER_INITIAL_LATITUDE: int
 
+    INITIAL_OBSTACLES: tuple[int, int] | None = None
+
 
 settings = Settings()
