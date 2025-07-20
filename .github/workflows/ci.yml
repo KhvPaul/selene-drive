@@ -24,7 +24,7 @@ jobs:
       run: poetry config virtualenvs.create false
 
     - name: Install dependencies
-      run: poetry install --with dev
+      run: poetry install --no-interaction --no-ansi;
 
     - name: Run Ruff Check
       run: poetry run ruff check .
