@@ -9,7 +9,7 @@ from sqlalchemy import delete, future
 from httpx import AsyncClient, ASGITransport
 
 from utils.annotations import get_async_db_session
-from .utils import utils as test_utils, db as db_helper
+from .utils import utils as test_utils, db as db_helper  # noqa: F401
 
 
 from main import app
@@ -60,7 +60,7 @@ async def clean_up_db(_session_cls):
 
 
 @contextlib.asynccontextmanager
-async def async_test_client(app: FastAPI, base_url: str = "http://test") -> t.AsyncGenerator[AsyncClient, None]:
+async def async_test_client(app: FastAPI, base_url: str = "http://test") -> t.AsyncGenerator[AsyncClient]:
     transport = ASGITransport(app=app, raise_app_exceptions=True)
     async with AsyncClient(transport=transport, base_url=base_url) as client:
         yield client

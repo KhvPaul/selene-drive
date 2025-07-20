@@ -1,9 +1,7 @@
 import contextlib
-import typing as t
 import httpx
 from functools import wraps
 
-import pytest
 from fastapi import FastAPI
 
 
@@ -14,7 +12,7 @@ registered_functions = []
 async def async_test_client(
     app: FastAPI | None = None,
     base_url: str = "http://localhost",
-) -> t.Optional[httpx.AsyncClient]:
+) -> httpx.AsyncClient | None:
     if not app:
         from main import app as current_app
         app = current_app

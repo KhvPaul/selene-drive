@@ -14,15 +14,10 @@ from ..utils import helpers as test_helpers
 
 
 def models_cls_generator():
-    try:
-        from sqlmodel import BaseSQLModel
-
-        metadata = BaseSQLModel.metadata
-    except ImportError as _:
-        metadata = models.Base().metadata
+    metadata = models.Base.metadata
     models_ = list(metadata.sorted_tables)
     models_.reverse()
-    for model in models_:
+    for model in models_:  # noqa: UP028
         yield model
 
 
@@ -126,7 +121,6 @@ async def _database_session_in_ci(skip_migrations=False) -> sa_asyncio.AsyncSess
         yield session_cls
 
 
-if os.getenv("IN_CI", False):
-    test_database_session = _database_session_in_ci
-else:
-    test_database_session = _database_session_local
+
+test_database_session = _database_session_in_ci if os.getenv("IN_CI", False) else _database_session_local
+
