@@ -45,8 +45,11 @@ class RoverStateToCommandInput(Base):
     )
 
 
-class Obstacle(Base, AutoIncrementPkMixin, CreateTimeModelMixin):
+class Obstacle(Base, CreateTimeModelMixin):
     __tablename__ = "obstacles"
+    __table_args__ = (
+        sa.PrimaryKeyConstraint("longitude", "latitude", name="longitude_latitude_pkey"),
+    )
 
     longitude: so.Mapped[int] = so.mapped_column(sa.Integer, nullable=False, comment="Rover current longitude")
     latitude: so.Mapped[int] = so.mapped_column(sa.Integer, nullable=False, comment="Rover current latitude")
