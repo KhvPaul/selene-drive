@@ -6,6 +6,10 @@ class RoverStateDBAPI(base_db_api.DBApiBase):
     model = models.RoverState
 
 
+class RoverStateToCommandInputDBAPI(base_db_api.DBApiBase):
+    models = models.RoverStateToCommandInput
+
+
 class CommandInputDBAPI(base_db_api.DBApiBase):
     model = models.CommandInput
 
