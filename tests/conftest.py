@@ -58,7 +58,6 @@ async def clean_up_db(_session_cls):
     yield _session_cls
 
 
-
 @contextlib.asynccontextmanager
 async def async_test_client(app: FastAPI, base_url: str = "http://test") -> t.AsyncGenerator[AsyncClient]:
     transport = ASGITransport(app=app, raise_app_exceptions=True)

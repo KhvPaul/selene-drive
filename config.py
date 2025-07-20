@@ -10,7 +10,6 @@ load_dotenv()
 
 
 class Settings(BaseSettings):
-
     BASE_DIR: str = os.path.dirname(os.path.realpath(__file__))
 
     API_V1_STR: str | None = "/api/v1"

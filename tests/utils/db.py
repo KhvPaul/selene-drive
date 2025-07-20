@@ -121,6 +121,4 @@ async def _database_session_in_ci(skip_migrations=False) -> sa_asyncio.AsyncSess
         yield session_cls
 
 
-
 test_database_session = _database_session_in_ci if os.getenv("IN_CI", False) else _database_session_local
-

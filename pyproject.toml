@@ -74,12 +74,10 @@ select = [
     # flake8-simplify
     "SIM",
     # isort
-#    "I",
+    "I",
     "YTT",
     "A",
     "Q",
-#    "SC",
-#    "H",
     "W",
     "T",
     "R",
@@ -90,22 +88,9 @@ select = [
 ignore = [
     "A002",
     "Q000",
-#    "SC100",
-#    "SC200",
-#    "H405",
-#    "H404",
-#    "H403",
-#    "H401",
-#    "H306",
-#    "H304",
-#    "H301",
-#    "H101",
     "E303",
-#    "W503",
     "E203",
     "FIX001",
-#    "I201",
-#    "I100",
     "E712",
     "RET504",
     "F841",
@@ -135,28 +120,11 @@ line-ending = "auto"
 
 [tool.ruff.lint.per-file-ignores]
 "routers/*" = ["F811"]
-"models.py" = ["A003"]
+"db/models/models.py" = ["A003"]
 "base.py" = ["E501"]
 "schemas/*" = ["A003", "N815", "N805"]
 "config.py" = ["N805", "E231"]
 "mixins.py" = ["A003", "N805"]
-
-
-[tool.black]
-line-length = 120
-exclude = '''
-/(
-    \.git
-  | \.tox
-  | \.venv
-  | build
-  | dist
-  | \.versions
-  | \fixtures
-)/
-'''
-extend-exclude="/(versions)"
-
 
 [tool.pytest.ini_options]
 minversion = "6.0"

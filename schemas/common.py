@@ -3,7 +3,6 @@ import uuid
 from pydantic import BaseModel, ConfigDict
 
 
-
 class ResponseBaseModel(BaseModel):
     model_config = ConfigDict(from_attributes=True)
 

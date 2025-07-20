@@ -47,4 +47,3 @@ class ModelDumpMixin(BaseModel):
         elif isinstance(item, dict):
             return {k: self._serialize_item(v) for k, v in item.items()}
         return item
-

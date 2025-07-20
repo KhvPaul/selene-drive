@@ -15,9 +15,11 @@ async def async_test_client(
 ) -> httpx.AsyncClient | None:
     if not app:
         from main import app as current_app
+
         app = current_app
     async with httpx.AsyncClient(app=app, base_url=base_url) as async_con:
         yield async_con
+
 
 def async_calls_counter(func):
     @wraps(func)
