@@ -1,0 +1,33 @@
+name: FastAPI CI
+
+on: [push, pull_request]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v2
+
+    - name: Set up Python
+      uses: actions/setup-python@v2
+      with:
+        python-version: '3.13.5'
+
+    - name: Install Poetry
+      run: |
+        curl -sSL https://install.python-poetry.org | python3 -
+        echo "$HOME/.local/bin" >> $GITHUB_PATH
+
+    - name: Configure Poetry (no virtualenvs)
+      run: poetry config virtualenvs.create false
+
+    - name: Install dependencies
+      run: poetry install --no-interaction --no-ansi --no-root;
+
+    - name: Run Ruff Check
+      run: poetry run ruff check . --diff
+
+    - name: Run Tests
+      run: poetry run pytest tests
