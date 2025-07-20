@@ -13,6 +13,7 @@ class Base(so.DeclarativeBase):  # noqa: F841
 class RoverState(Base, AutoIncrementPkMixin, CreateTimeModelMixin):
     """
 
+    Triggers: - 2025_07_20__16-51__a81dc1afd560_add_prevent_rover_on_obstacle_trigger.py
     """
     __tablename__ = "rover_states"
 
