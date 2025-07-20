@@ -33,7 +33,7 @@ class RoverManager(BaseModelManager):
         Initialize the rover's first position and direction.
         Raise an exception if the rover would land on an obstacle.
         """
-        if cls._obstacle_db_api.retrieve(
+        if await cls._obstacle_db_api.retrieve(
             session_cls=session_cls,
             condition=(
                 cls._obstacle_db_api.model.longitude == longitude, cls._obstacle_db_api.model.latitude == latitude
@@ -53,7 +53,9 @@ class RoverManager(BaseModelManager):
 
     @classmethod
     async def retrieve_rover_state(cls, session_cls: so.sessionmaker[sa_asyncio.AsyncSession]) -> models.RoverState:
-        return await cls._rover_db_api.retrieve(session_cls=session_cls)
+        return await cls._rover_db_api.retrieve(
+            session_cls=session_cls, order_fields=(cls._rover_db_api.model.id.desc(),)
+        )
 
     @classmethod
     async def execute_rover_commands(
@@ -89,24 +91,26 @@ class RoverManager(BaseModelManager):
                 # Insert in batches
                 if len(batch) == 1000:
                     try:
-                        await cls._rover_db_api.bulk_create(session_cls=session_cls, data=batch)
+                        await cls._rover_db_api.bulk_create_session(session=session, data=batch)
                         batch.clear()
                     except sa_exc.IntegrityError:
                         # Find the exact failing command in batch
-                        x, y, direction = await cls._binary_insert_with_fail_safe(session_cls=session_cls, batch=batch)
+                        x, y, direction = await cls._binary_insert_with_fail_safe(session=session, batch=batch)
                         raise custom_exc.RoverBlockedByObstacleException(longitude=x, latitude=y, direction=direction)
             # Flush remaining steps
             if batch:
                 try:
-                    await cls._rover_db_api.bulk_create(session_cls=session_cls, data=batch)
+                    await cls._rover_db_api.bulk_create_session(session=session, data=batch)
                 except sa_exc.IntegrityError:
-                    x, y, direction = await cls._binary_insert_with_fail_safe(session_cls=session_cls, batch=batch)
+                    x, y, direction = await cls._binary_insert_with_fail_safe(session=session, batch=batch)
                     raise custom_exc.RoverBlockedByObstacleException(longitude=x, latitude=y, direction=direction)
-
-            return models.RoverState(longitude=x, latitude=y, direction=direction)
+            await session.commit()
+            return await cls.retrieve_rover_state(session_cls=session_cls)
 
     @classmethod
-    async def _binary_insert_with_fail_safe(cls, session_cls, batch: list[dict]) -> tuple[int, int, enums.Direction]:
+    async def _binary_insert_with_fail_safe(
+        cls, session: sa_asyncio.AsyncSession, batch: list[dict]
+    ) -> tuple[int, int, enums.Direction]:
         """
         Performs a binary search over a batch to find the first entry that violates
         the trigger constraint (i.e., hits an obstacle).
@@ -116,11 +120,11 @@ class RoverManager(BaseModelManager):
         while lower < upper:
             mid = (lower + upper) // 2
             try:
-                await cls._rover_db_api.bulk_create(session_cls=session_cls, data=batch[:mid + 1])
+                await cls._rover_db_api.bulk_create(session=session, data=batch[:mid + 1])
                 lower = mid + 1
             except sa_exc.IntegrityError:
                 upper = mid
         if lower > 0:
-            await cls._rover_db_api.bulk_create(session_cls=session_cls, data=batch[:lower])
+            await cls._rover_db_api.bulk_create(session=session, data=batch[:lower])
         bad = batch[lower]
         return bad["longitude"], bad["latitude"], bad["direction"]
