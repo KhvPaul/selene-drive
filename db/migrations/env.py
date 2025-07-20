@@ -52,7 +52,7 @@ target_metadata = Base.metadata  # add support SQLModel
 def get_url() -> str:
     from config import settings
 
-    return settings.DATABASE_ENDPOINT
+    return str(settings.DATABASE_ENDPOINT)
 
 
 # https://github.com/sqlalchemy/alembic/issues/278#issuecomment-1463537459

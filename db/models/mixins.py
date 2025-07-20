@@ -19,6 +19,18 @@ class PkModelMixin:
         )
 
 
+class AutoIncrementPkMixin:
+    @so.declared_attr
+    def id(cls) -> so.Mapped[int]:
+        return so.mapped_column(
+            sa.Integer,
+            primary_key=True,
+            autoincrement=True,
+            index=True,
+            comment="Auto-incrementing unique identifier for each record",
+        )
+
+
 class CreateTimeModelMixin:
     @so.declared_attr
     def create_time(cls) -> so.Mapped[datetime.datetime]:
