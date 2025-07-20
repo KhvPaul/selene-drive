@@ -5,12 +5,14 @@ from uvicorn_worker import UvicornWorker
 
 from config import settings
 from routers import app_router, internal_router
+from utils.lifespan import lifespan
 
 
 app = FastAPI(
     debug=False,
     docs_url=f"/docs",
     openapi_url=f"/openapi.json",
+    lifespan=lifespan,
 )
 app.openapi_version = "3.0.0"
 

@@ -59,5 +59,8 @@ class Settings(BaseSettings):
         )
         return self
 
+    ROVER_INITIAL_LONGITUDE: int
+    ROVER_INITIAL_LATITUDE: int
+
 
 settings = Settings()
