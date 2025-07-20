@@ -4,7 +4,6 @@ on: [push, pull_request]
 
 jobs:
   build:
-
     runs-on: ubuntu-latest
 
     steps:
@@ -16,14 +15,22 @@ jobs:
       with:
         python-version: '3.13.5'
 
+    - name: Install Poetry
+      run: |
+        curl -sSL https://install.python-poetry.org | python3 -
+        echo "$HOME/.local/bin" >> $GITHUB_PATH
+
+    - name: Configure Poetry (no virtualenvs)
+      run: poetry config virtualenvs.create false
+
     - name: Install dependencies
-      run: pip install -r dev-requirements.txt
+      run: poetry install --with dev
 
     - name: Run Ruff Check
-      run: ruff check .
+      run: poetry run ruff check .
 
     - name: Run Ruff Diff
-      run: ruff format . --check --diff
+      run: poetry run ruff format . --check --diff
 
     - name: Run Tests
-      run: pytest tests
+      run: poetry run pytest tests
