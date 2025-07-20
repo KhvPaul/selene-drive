@@ -64,7 +64,7 @@ class BaseDbApiHandler:
         return await cls._execute(session, stmt, kwargs)
 
     @classmethod
-    async def session_cls_execute(cls, session_cls: sa_asyncio.AsyncSession, stmt, kwargs: dict | None = None):
+    async def session_cls_execute(cls, session_cls: so.sessionmaker[sa_asyncio.AsyncSession], stmt, kwargs: dict | None = None):
         async with session_cls() as session:
             return await cls._execute(session, stmt, kwargs)
 
@@ -81,7 +81,7 @@ class BaseDbApiHandler:
         await cls._commit(session)
 
     @classmethod
-    async def ping(cls, session_cls: sa_asyncio.AsyncSession):
+    async def ping(cls, session_cls: so.sessionmaker[sa_asyncio.AsyncSession]):
         async with session_cls() as session:
             await cls._execute(session, text("SELECT 1"))
 
@@ -248,7 +248,7 @@ class BaseDbApiHandler:
     @classmethod
     async def _retrieve_count(
         cls,
-        session_cls: sa_asyncio.AsyncSession,
+        session_cls: so.sessionmaker[sa_asyncio.AsyncSession],
         model: DeclarativeMeta | None = None,
         field: Column | None = None,
         condition: tuple[BinaryExpression | bool, ...] = (),
@@ -275,7 +275,7 @@ class BaseDbApiHandler:
     @classmethod
     async def _retrieve_union_count(  # TODO: needs testing
         cls,
-        session_cls: sa_asyncio.AsyncSession,
+        session_cls: so.sessionmaker[sa_asyncio.AsyncSession],
         models: tuple[DeclarativeMeta, ...],
         conditions: tuple[tuple[BinaryExpression | bool | None, ...], ...],
         literal_replacement: dict[str, str] | None = None,
@@ -341,7 +341,7 @@ class DBApiBase(BaseDbApiHandler):
     @classmethod
     async def retrieve(
         cls,
-        session_cls: sa_asyncio.AsyncSession,
+        session_cls: so.sessionmaker[sa_asyncio.AsyncSession],
         model: DeclarativeMeta | None = None,
         condition: tuple[BinaryExpression | bool, ...] = (),
         joins: tuple[dict[DeclarativeMeta | Subquery, BinaryExpression | bool, bool, bool], ...] | None = None,
@@ -375,12 +375,22 @@ class DBApiBase(BaseDbApiHandler):
             )
 
     @classmethod
-    async def exists(cls, session_cls: sa_asyncio.AsyncSession, condition: list, many: bool = False) -> list[bool] | bool:
+    async def exists(
+        cls,
+        session_cls: so.sessionmaker[sa_asyncio.AsyncSession],
+        condition: tuple[BinaryExpression | bool, ...] = (),
+        many: bool = False
+    ) -> list[bool] | bool:
         async with session_cls() as session:
             return await cls.exists_session(session=session, condition=condition, many=many)
 
     @classmethod
-    async def exists_session(cls, session, condition: list, many: bool = False) -> list[bool] | bool:
+    async def exists_session(
+        cls,
+        session: sa_asyncio.AsyncSession,
+        condition: tuple[BinaryExpression | bool, ...] = (),
+        many: bool = False
+    ) -> list[bool] | bool:
         stmt = future.select(exists(cls.model.id)).where(*condition)
         res = await cls._execute(session, stmt)
         return res.scalars().all() if many else res.scalar()
@@ -388,7 +398,7 @@ class DBApiBase(BaseDbApiHandler):
     @classmethod
     async def create(
         cls,
-        session_cls: sa_asyncio.AsyncSession,
+        session_cls: so.sessionmaker[sa_asyncio.AsyncSession],
         data: dict,
         return_: bool = False,
     ) -> model | DeclarativeMeta | None:
@@ -463,7 +473,7 @@ class DBApiBase(BaseDbApiHandler):
     @classmethod
     async def bulk_create(
         cls,
-        session_cls: sa_asyncio.AsyncSession,
+        session_cls: so.sessionmaker[sa_asyncio.AsyncSession],
         data: t.Iterable | t.Generator,
         return_: bool = False,
     ):
@@ -486,7 +496,7 @@ class DBApiBase(BaseDbApiHandler):
         await cls._execute(session, stmt)
 
     @classmethod
-    async def update(cls, session_cls: sa_asyncio.AsyncSession, data: dict, condition: tuple):
+    async def update(cls, session_cls: so.sessionmaker[sa_asyncio.AsyncSession], data: dict, condition: tuple):
         async with session_cls() as session:
             await cls.update_session(session, data, condition)
             await cls._commit(session)
@@ -503,7 +513,7 @@ class DBApiBase(BaseDbApiHandler):
 
     @classmethod
     async def delete(
-        cls, session_cls: sa_asyncio.AsyncSession, condition: tuple[BinaryExpression | bool, ...], return_: bool = False
+        cls, session_cls: so.sessionmaker[sa_asyncio.AsyncSession], condition: tuple[BinaryExpression | bool, ...], return_: bool = False
     ) -> list[dict] | None:
         async with session_cls() as session:
             result = await cls.delete_session(session, condition, return_)
@@ -513,7 +523,7 @@ class DBApiBase(BaseDbApiHandler):
     @classmethod
     async def retrieve_count(
         cls,
-        session_cls: sa_asyncio.AsyncSession,
+        session_cls: so.sessionmaker[sa_asyncio.AsyncSession],
         model: DeclarativeMeta | None = None,
         field: Column | None = None,
         condition: tuple[BinaryExpression | bool, ...] = (),
@@ -526,7 +536,7 @@ class DBApiBase(BaseDbApiHandler):
     @classmethod
     async def retrieve_union_count(  # TODO: needs testing
         cls,
-        session_cls: sa_asyncio.AsyncSession,
+        session_cls: so.sessionmaker[sa_asyncio.AsyncSession],
         models: tuple[DeclarativeMeta, ...],
         conditions: tuple[tuple[BinaryExpression | bool | None, ...], ...],
         literal_replacement: dict[str, str] | None = None,

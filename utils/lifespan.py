@@ -21,16 +21,17 @@ async def lifespan(app: FastAPI):
             if not await RoverManager.check_rover_already_landed(session_cls=session_cls):
                 await RoverManager.initialize_rover(
                     session_cls=session_cls,
-                    longitude=settings.START_POSTITION[0],
-                    latitude=settings.START_POSTITION[1],
+                    longitude=settings.START_POSITION[0],
+                    latitude=settings.START_POSITION[1],
                     direction=settings.START_DIRECTION,
                 )
                 logger.info(
                     f"Rover successfully landed. "
-                    f"Coord ({settings.START_POSTITION[0]}, {settings.START_POSTITION[1]})"
+                    f"Coord ({settings.START_POSITION[0]}, {settings.START_POSITION[1]})"
                 )
-        except custom_exc.RoverLandedInObstacleException:
+        except custom_exc.RoverLandedInObstacleException as exc:
             logger.critical("Rover landed on an obstacle. Startup aborted.")
             # sys.exit(1) — forceful shutdown, better to cancel lifespan
             raise RuntimeError("Rover landed in an obstacle. Server aborted.")
+    logger.info("Rover is ready to accept requests.")
     yield

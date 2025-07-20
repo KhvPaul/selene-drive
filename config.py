@@ -5,6 +5,7 @@ from dotenv import load_dotenv
 from pydantic import Field, PostgresDsn, model_validator
 from pydantic_settings import BaseSettings
 
+from schemas import enums
 
 load_dotenv()
 
@@ -59,9 +60,8 @@ class Settings(BaseSettings):
         )
         return self
 
-    ROVER_INITIAL_LONGITUDE: int
-    ROVER_INITIAL_LATITUDE: int
-
+    START_POSITION: tuple[int, int]
+    START_DIRECTION: enums.Direction
     INITIAL_OBSTACLES: tuple[int, int] | None = None
 
 
