@@ -1,10 +1,8 @@
-import uuid
-
 import sqlalchemy as sa
 from sqlalchemy import orm as so
 from sqlalchemy.dialects import postgresql as pg
 
-from .mixins import CreateTimeModelMixin, PkModelMixin, TimestampModelMixin  # noqa: F401
+from .mixins import CreateTimeModelMixin, AutoIncrementPkMixin
 from schemas import enums
 
 
@@ -12,7 +10,7 @@ class Base(so.DeclarativeBase):  # noqa: F841
     ...
 
 
-class RoverState(Base, PkModelMixin, CreateTimeModelMixin):
+class RoverState(Base, AutoIncrementPkMixin, CreateTimeModelMixin):
     """
 
     """
@@ -25,7 +23,7 @@ class RoverState(Base, PkModelMixin, CreateTimeModelMixin):
     )
 
 
-class CommandInput(Base, PkModelMixin, CreateTimeModelMixin):
+class CommandInput(Base, AutoIncrementPkMixin, CreateTimeModelMixin):
     __tablename__ = "command_inputs"
 
     command: so.Mapped[str] = so.mapped_column(sa.String, nullable=False, comment="Inputted command")
@@ -38,11 +36,15 @@ class RoverStateToCommandInput(Base):
         sa.PrimaryKeyConstraint("rover_state_id", "command_input_id", name="rover_state_id_command_input_id_pkey"),
     )
 
-    rover_state_id: so.Mapped[uuid.UUID] = so.mapped_column(pg.UUID, nullable=False, comment="Rover state ID")
-    command_input_id: so.Mapped[uuid.UUID] = so.mapped_column(pg.UUID, nullable=False, comment="Command input ID")
+    rover_state_id: so.Mapped[int] = so.mapped_column(
+        sa.Integer, sa.ForeignKey("rover_states.id", ondelete="RESTRICT"), nullable=False, comment="Rover state ID"
+    )
+    command_input_id: so.Mapped[int] = so.mapped_column(
+        sa.Integer, sa.ForeignKey("command_inputs.id", name="", ondelete="RESTRICT"), nullable=False, comment="Command input ID"
+    )
 
 
-class Obstacle(Base, PkModelMixin, CreateTimeModelMixin):
+class Obstacle(Base, AutoIncrementPkMixin, CreateTimeModelMixin):
     __tablename__ = "obstacles"
 
     longitude: so.Mapped[int] = so.mapped_column(sa.Integer, nullable=False, comment="Rover current longitude")

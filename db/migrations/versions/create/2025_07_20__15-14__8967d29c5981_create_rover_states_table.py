@@ -30,10 +30,10 @@ def upgrade() -> None:
         ),
         sa.Column(
             "id",
-            sa.UUID(),
-            server_default=sa.text("gen_random_uuid()"),
+            sa.Integer(),
+            autoincrement=True,
             nullable=False,
-            comment="Unique identifier for each record",
+            comment='Auto-incrementing unique identifier for each record',
         ),
         sa.Column("create_time", postgresql.TIMESTAMP(), server_default=sa.text("(CURRENT_TIMESTAMP)"), nullable=False),
         sa.PrimaryKeyConstraint("id"),
