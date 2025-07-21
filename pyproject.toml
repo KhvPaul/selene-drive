@@ -1,0 +1,159 @@
+[project]
+name = "selene-drive"
+version = "0.1.0"
+description = ""
+authors = [
+    {name = "Pavlo Khvaliuk", email = "paul.khvaliuk@gmail.com"}
+]
+readme = "README.md"
+requires-python = ">=3.13.5,<4.0"
+
+[tool.poetry.dependencies]
+fastapi = "0.116.1"
+uvicorn-worker = "^0.3.0"
+sqlalchemy = "2.0.41"
+psycopg = {extras = ["binary"], version = "3.2.9"}
+alembic = "^1.16.4"
+asyncpg = "^0.30.0"
+pydantic-settings = "^2.10.1"
+psycopg-binary = "^3.2.9"
+uvloop = "^0.21.0"
+greenlet = "^3.2.3"
+
+[tool.poetry.group.dev.dependencies]
+ipython = "^9.4.0"
+tox = "^4.27.0"
+ruff = "^0.12.3"
+testcontainers = "^4.10.0"
+httpx = "^0.28.1"
+pre-commit = "^4.2.0"
+pytest-env = "^1.1.5"
+pytest-asyncio = "^1.1.0"
+faker = "^37.4.2"
+factory-boy = "^3.3.3"
+pytest-cov = "^6.2.1"
+
+
+[tool.ruff]
+target-version = "py313"
+# Exclude a variety of commonly ignored directories.
+exclude = [
+    ".git",
+    ".github",
+    ".tox",
+    "dist",
+    "doc",
+    "*lib/python*",
+    "*egg",
+    "build",
+    "docs",
+    ".venv",
+    "venv",
+    "migrations",
+    ".idea",
+    "__pycache__",
+    "playground",
+    "main.py",
+]
+
+# Same as Black.
+line-length = 120
+indent-width = 4
+
+#target-version = "py38"  # Assume Python 3.8
+
+
+[tool.ruff.lint]
+select = [
+    # pycodestyle
+    "E",
+    # Pyflakes
+    "F",
+    # pyupgrade
+    "UP",
+    # flake8-bugbear
+    "B",
+    # flake8-simplify
+    "SIM",
+    # isort
+    "I",
+    "YTT",
+    "A",
+    "Q",
+    "W",
+    "T",
+    "R",
+    "C",
+    "N",
+    "C90"
+]
+ignore = [
+    "A002",
+    "Q000",
+    "E303",
+    "E203",
+    "FIX001",
+    "E712",
+    "RET504",
+    "F841",
+    "RET503",
+    "C901",
+    "SIM105",
+    "B010"
+]
+
+fixable = ["ALL"]
+unfixable = []
+extend-safe-fixes = []
+extend-unsafe-fixes = []
+
+[tool.ruff.format]
+# Like Black, use double quotes for strings.
+quote-style = "double"
+
+# Like Black, indent with spaces, rather than tabs.
+#indent-style = "space"
+
+# Like Black, respect magic trailing commas.
+skip-magic-trailing-comma = false
+
+# Like Black, automatically detect the appropriate line ending.
+line-ending = "auto"
+
+[tool.ruff.lint.per-file-ignores]
+"routers/*" = ["F811"]
+"db/models/models.py" = ["A003"]
+"base.py" = ["E501"]
+"schemas/*" = ["A003", "N815", "N805"]
+"config.py" = ["N805", "E231"]
+"mixins.py" = ["A003", "N805"]
+
+[tool.pytest.ini_options]
+asyncio_mode = "auto"
+asyncio_default_fixture_loop_scope = "session"
+minversion = "6.0"
+addopts = "-ra -q"
+testpaths = ["tests"]
+markers = [
+    "slow: marks tests as slow (deselect with '-m \"not slow\"')",
+    "serial"
+]
+filterwarnings = [
+    "error",
+    "ignore::UserWarning"
+]
+env = [
+    "API_V1_STR=/api/v1",
+    "START_POSITION=[0,0]",
+    "START_DIRECTION=NORTH",
+    # database
+    "POSTGRES_USER=test",
+    "POSTGRES_PASSWORD=test",
+    "POSTGRES_HOST=localhost",
+#    "POSTGRES_PORT=5432",
+    "POSTGRES_DB=selene-drive",
+]
+
+[build-system]
+requires = ["poetry-core>=2.0.0,<3.0.0"]
+build-backend = "poetry.core.masonry.api"
