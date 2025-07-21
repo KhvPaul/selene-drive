@@ -44,8 +44,12 @@ jobs:
       - name: Run Ruff Check
         run: poetry run ruff check . --diff
 
-      - name: Run Tests
-        run: poetry run pytest tests
+      - name: Run tests with coverage
+        run: |
+          poetry run pytest \
+            --cov=. \
+            --cov-report=term-missing \
+            --cov-fail-under=75
         env:
           IN_CI: True
           POSTGRES_HOST: localhost
