@@ -64,5 +64,7 @@ class Settings(BaseSettings):
     START_DIRECTION: enums.Direction
     INITIAL_OBSTACLES: tuple[tuple[int, int], ...] | None = None
 
+    IN_CI: bool = False
+
 
 settings = Settings()

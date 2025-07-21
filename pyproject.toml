@@ -139,10 +139,11 @@ filterwarnings = [
     "error",
     "ignore::UserWarning"
 ]
-
-[tool.pytest.env]
-API_V1_STR = "/api/v1"
-
+env = [
+  "API_V1_STR=/api/v1",
+  "START_POSITION=[0,0]",
+  "START_DIRECTION=NORTH"
+]
 
 [build-system]
 requires = ["poetry-core>=2.0.0,<3.0.0"]
