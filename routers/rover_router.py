@@ -3,20 +3,21 @@ from fastapi import APIRouter
 from managers import DBDataProvider, RoverManager, RoverPlanner
 from schemas import rover_schemas as pyd_mod_rover
 from schemas.rover_schemas import RoverStateResponse
-from utils.annotations import AsyncSession, AsyncSessionCls
+from utils.annotations import AsyncSession
 
 router = APIRouter(prefix="/rover", tags=["Rover"])
 
 
 @router.get("", response_model=pyd_mod_rover.RoverStateResponse)
-async def retrieve_current_state(session: AsyncSession):
-    longitude, latitude, direction = await DBDataProvider(session=session).retrieve_current_state()
-    return RoverStateResponse(longitude=longitude, latitude=latitude, direction=direction)
+async def retrieve_current_state(session_cls: AsyncSession):
+    async with session_cls() as session:
+        longitude, latitude, direction = await DBDataProvider(session=session).retrieve_current_state()
+        return RoverStateResponse(longitude=longitude, latitude=latitude, direction=direction)
 
 
 
 @router.post("/execute_command", response_model=pyd_mod_rover.RoverStateAfterCommandResponse)
-async def execute_rover_command(session_cls: AsyncSessionCls, command: pyd_mod_rover.RoverCommandsRequest):
+async def execute_rover_command(session_cls: AsyncSession, command: pyd_mod_rover.RoverCommandsRequest):
     async  with session_cls() as session:
         res = await RoverManager(
             data_provider=DBDataProvider(session=session),
