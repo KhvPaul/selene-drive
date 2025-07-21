@@ -1,21 +1,9 @@
 import copy
 import typing as t
 
+import sqlalchemy as sa
 from asyncpg import exceptions as ae
-from sqlalchemy import (
-    Column,
-    column as sa_column,
-    delete,
-    desc,
-    exc as sa_exc,
-    exists,
-    func,
-    future,
-    literal,
-    text,
-    union,
-    update,
-)
+from sqlalchemy import exc as sa_exc
 from sqlalchemy import orm as so
 from sqlalchemy.dialects import postgresql as pg_dialect
 from sqlalchemy.ext import asyncio as sa_asyncio
@@ -26,7 +14,6 @@ from sqlalchemy.sql.expression import BinaryExpression
 
 from logger import logger
 from utils import exceptions as custom_exc
-
 
 Base = so.declarative_base()
 
@@ -45,12 +32,14 @@ class BaseDbApiHandler:
                     exc_name = "CharacterNotInRepertoireError"
                 else:
                     exc_name = exc.orig.args[0]
+                    if "RaiseError" in exc_name:
+                        raise exc
         logger.error(f"{exc_name}: {repr(exc)}")
         raise raised_error()
 
     @classmethod
     async def _execute(cls, session: sa_asyncio.AsyncSession, stmt, kwargs=None):
-        kwargs = kwargs if kwargs else {}
+        kwargs = {} if not kwargs else kwargs
         try:
             res = await session.execute(stmt, kwargs)
         except Exception as exc:
@@ -64,9 +53,45 @@ class BaseDbApiHandler:
         return await cls._execute(session, stmt, kwargs)
 
     @classmethod
-    async def session_cls_execute(cls, session_cls: so.sessionmaker[sa_asyncio.AsyncSession], stmt, kwargs: dict | None = None):
+    async def execute_session_cls(
+        cls,
+        session_cls: so.sessionmaker[sa_asyncio.AsyncSession],
+        stmt: sa.text,
+        kwargs: dict | None = None,
+        all_: bool = True,
+        scalar: bool = True,
+        mapping: bool = False,
+        raw_result: bool = False,
+    ):
         async with session_cls() as session:
-            return await cls._execute(session, stmt, kwargs)
+            return await cls.execute_session(
+                session=session,
+                stmt=stmt,
+                kwargs=kwargs,
+                all_=all_,
+                scalar=scalar,
+                mapping=mapping,
+                raw_result=raw_result,
+            )
+
+    @classmethod
+    async def execute_session(
+        cls,
+        session: sa_asyncio.AsyncSession,
+        stmt: sa.text,
+        kwargs: dict | None = None,
+        all_: bool = True,
+        scalar: bool = True,
+        mapping: bool = False,
+        raw_result: bool = False,
+    ):
+        res = await cls._execute(session=session, stmt=stmt, kwargs=kwargs)
+        if mapping:
+            return res.mappings().all() if all_ else res.mappings().first()
+        if scalar:
+            return res.scalar().all() if all_ else res.scalar()
+        if raw_result:
+            return res.all() if all_ else res.scalar()
 
     @classmethod
     async def _commit(cls, session: sa_asyncio.AsyncSession):
@@ -83,7 +108,7 @@ class BaseDbApiHandler:
     @classmethod
     async def ping(cls, session_cls: so.sessionmaker[sa_asyncio.AsyncSession]):
         async with session_cls() as session:
-            await cls._execute(session, text("SELECT 1"))
+            await cls._execute(session, sa.text("SELECT 1"))
 
     @classmethod
     async def _retrieve_session(
@@ -96,12 +121,12 @@ class BaseDbApiHandler:
         joined_load: tuple[DeclarativeMeta | list[DeclarativeMeta] | str, ...] | None = None,
         selectin_load: tuple[DeclarativeMeta | list[DeclarativeMeta] | str, ...] | None = None,
         many: bool = False,
-        order_fields: tuple[Column | str | Case, ...] | None = None,
+        order_fields: tuple[sa.Column | str | Case, ...] | None = None,
         order_desc: bool = False,
         limit: int | None = None,
         page: int | None = None,
-        distinct: tuple[Column | str | Case, ...] | bool | None = None,
-        group_by: tuple[Column | str | Case] | None = None,
+        distinct: tuple[sa.Column | str | Case, ...] | bool | None = None,
+        group_by: tuple[sa.Column | str | Case] | None = None,
     ) -> DeclarativeMeta | list[DeclarativeMeta]:
         """
         This is an asynchronous class method that is used to retrieve objects from the database using SQLAlchemy ORM.
@@ -140,7 +165,7 @@ class BaseDbApiHandler:
 
             result = await MyClass._retrieve(session_cls=MyAsyncSession, model=MyModel, condition=(MyModel.id == 1,), many=True)
         """
-        stmt = future.select(model or cls.model)
+        stmt = sa.future.select(model or cls.model)
         if distinct:
             stmt = stmt.distinct(*distinct) if isinstance(distinct, tuple) else stmt.distinct()
         if joins:
@@ -159,7 +184,7 @@ class BaseDbApiHandler:
         stmt = stmt.filter(*condition)
         if order_fields is not None:
             if order_desc:
-                stmt.order_by(*((desc(order_fields[0]),) + order_fields[1:]))
+                stmt.order_by(*((sa.desc(order_fields[0]),) + order_fields[1:]))
             else:
                 stmt = stmt.order_by(*order_fields)
         if group_by:
@@ -181,7 +206,7 @@ class BaseDbApiHandler:
         conditions: tuple[tuple[BinaryExpression | bool | None, ...], ...],
         joins: tuple[tuple[
             dict[DeclarativeMeta | Subquery, BinaryExpression | bool, bool, bool], ...], ...] | None = None,
-        subquery_load: tuple[Column | str, ...] | None = None,
+        subquery_load: tuple[sa.Column | str, ...] | None = None,
         order_field: str | None = None,
         order_desc: bool = False,
         limit: int | None = None,
@@ -210,9 +235,9 @@ class BaseDbApiHandler:
                 Each dictionary contains the column names as keys and the corresponding data as values.
         """
         union_statements = [
-            future.select(
+            sa.future.select(
                 *(getattr(model, column) for column in columns),
-                literal(
+                sa.literal(
                     model.__name__ if not literal_replacement else literal_replacement.get(
                         model.__name__, model.__name__
                     )
@@ -224,18 +249,18 @@ class BaseDbApiHandler:
                 if for_model_joins:
                     for join in for_model_joins:
                         stmt = stmt.join(*join)
-        union_statement = union(*union_statements)
-        stmt = future.select(
-            *(sa_column(column) for column in columns), sa_column("type")
+        union_statement = sa.union(*union_statements)
+        stmt = sa.future.select(
+            *(sa.column(column) for column in columns), sa.column("type")
         ).select_from(union_statement.alias())
         # fmt: on
         if subquery_load:
             stmt = stmt.options(*[so.subqueryload(el) for el in subquery_load])
         if order_field:
             stmt = (
-                stmt.order_by(text(f"{order_field}"))
+                stmt.order_by(sa.text(f"{order_field}"))
                 if not order_desc
-                else stmt.order_by(desc(text(f"{order_field}")))
+                else stmt.order_by(sa.desc(sa.text(f"{order_field}")))
             )
         if limit:
             stmt = stmt.limit(limit)
@@ -250,7 +275,7 @@ class BaseDbApiHandler:
         cls,
         session_cls: so.sessionmaker[sa_asyncio.AsyncSession],
         model: DeclarativeMeta | None = None,
-        field: Column | None = None,
+        field: sa.Column | None = None,
         condition: tuple[BinaryExpression | bool, ...] = (),
         joins: tuple[dict[DeclarativeMeta | Subquery, BinaryExpression | bool, bool, bool], ...] | None = None,
         subquery_load: tuple[DeclarativeMeta | list[DeclarativeMeta] | str, ...] | None = None,
@@ -258,9 +283,9 @@ class BaseDbApiHandler:
     ):
         async with session_cls() as session:
             if field:
-                stmt = future.select(func.count(field).label("count"))
+                stmt = sa.future.select(sa.func.count(field).label("count"))
             else:
-                stmt = future.select(func.count(model.id if model else cls.model.id).label("count"))
+                stmt = sa.future.select(sa.func.count(model.id if model else cls.model.id).label("count"))
             if distinct:
                 stmt = stmt.distinct()
             if joins:
@@ -282,11 +307,11 @@ class BaseDbApiHandler:
     ):
         async with session_cls() as session:
             # fmt: off
-            union_statement = union(
+            union_statement = sa.union(
                 *(
-                    future.select(
-                        func.count(model.id).filter(*condition).label("count"),
-                        literal(
+                    sa.future.select(
+                        sa.func.count(model.id).filter(*condition).label("count"),
+                        sa.literal(
                             model.__name__ if not literal_replacement else literal_replacement.get(
                                 model.__name__, model.__name__
                             )
@@ -294,7 +319,7 @@ class BaseDbApiHandler:
                     ).where(*condition) for model, condition in zip(models, conditions, strict=True)
                 )
             )
-            stmt = future.select(sa_column("count"), sa_column("type")).select_from(union_statement.alias())
+            stmt = sa.future.select(sa.column("count"), sa.column("type")).select_from(union_statement.alias())
             # fmt: on
             res = await cls._execute(session, stmt)
             results = res.fetchall()
@@ -316,11 +341,11 @@ class DBApiBase(BaseDbApiHandler):
         joined_load: tuple[DeclarativeMeta | list[DeclarativeMeta] | str, ...] | None = None,
         selectin_load: tuple[DeclarativeMeta | list[DeclarativeMeta] | str, ...] | None = None,
         many: bool = False,
-        order_fields: tuple[Column | str | Case, ...] | None = None,
+        order_fields: tuple[sa.Column | str | Case, ...] | None = None,
         order_desc: bool = False,
         limit: int | None = None,
         page: int | None = None,
-        distinct: tuple[Column | str | Case, ...] | bool | None = None,
+        distinct: tuple[sa.Column | str | Case, ...] | bool | None = None,
     ) -> DeclarativeMeta | list[DeclarativeMeta]:
         return await cls._retrieve_session(
             session=session,
@@ -349,12 +374,12 @@ class DBApiBase(BaseDbApiHandler):
         joined_load: tuple[DeclarativeMeta | list[DeclarativeMeta] | str, ...] | None = None,
         selectin_load: tuple[DeclarativeMeta | list[DeclarativeMeta] | str, ...] | None = None,
         many: bool = False,
-        order_fields: tuple[Column | str | Case, ...] | None = None,
+        order_fields: tuple[sa.Column | str | Case, ...] | None = None,
         order_desc: bool = False,
         limit: int | None = None,
         page: int | None = None,
-        distinct: tuple[Column | str | Case, ...] | bool | None = None,
-        group_by: tuple[Column | str | Case] | None = None,
+        distinct: tuple[sa.Column | str | Case, ...] | bool | None = None,
+        group_by: tuple[sa.Column | str | Case] | None = None,
     ) -> model | DeclarativeMeta | list[DeclarativeMeta]:
         async with session_cls() as session:
             return await cls._retrieve_session(
@@ -391,7 +416,7 @@ class DBApiBase(BaseDbApiHandler):
         condition: tuple[BinaryExpression | bool, ...] = (),
         many: bool = False
     ) -> list[bool] | bool:
-        stmt = future.select(exists(cls.model.id)).where(*condition)
+        stmt = sa.future.select(sa.exists(cls.model.id)).where(*condition)
         res = await cls._execute(session, stmt)
         return res.scalars().all() if many else res.scalar()
 
@@ -492,7 +517,7 @@ class DBApiBase(BaseDbApiHandler):
 
     @classmethod
     async def update_session(cls, session: t.ClassVar[sa_asyncio.AsyncSession], data: dict, condition: list):
-        stmt = update(cls.model).where(*condition).values(data)
+        stmt = sa.update(cls.model).where(*condition).values(data)
         await cls._execute(session, stmt)
 
     @classmethod
@@ -505,7 +530,7 @@ class DBApiBase(BaseDbApiHandler):
     async def delete_session(
         cls, session: sa_asyncio.AsyncSession, condition: tuple[BinaryExpression | bool, ...], return_: bool = False
     ) -> list[dict] | None:
-        stmt = delete(cls.model).where(*condition)
+        stmt = sa.delete(cls.model).where(*condition)
         if return_:
             stmt = stmt.returning(cls.model)
         res = await cls._execute(session, stmt)
@@ -525,7 +550,7 @@ class DBApiBase(BaseDbApiHandler):
         cls,
         session_cls: so.sessionmaker[sa_asyncio.AsyncSession],
         model: DeclarativeMeta | None = None,
-        field: Column | None = None,
+        field: sa.Column | None = None,
         condition: tuple[BinaryExpression | bool, ...] = (),
         joins: tuple[dict[DeclarativeMeta | Subquery, BinaryExpression | bool, bool, bool], ...] | None = None,
         subquery_load: tuple[DeclarativeMeta | list[DeclarativeMeta] | str, ...] | None = None,

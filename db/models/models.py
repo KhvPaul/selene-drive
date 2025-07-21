@@ -2,8 +2,9 @@ import sqlalchemy as sa
 from sqlalchemy import orm as so
 from sqlalchemy.dialects import postgresql as pg
 
-from .mixins import CreateTimeModelMixin, AutoIncrementPkMixin
 from schemas import enums
+
+from .mixins import AutoIncrementPkMixin, CreateTimeModelMixin
 
 
 class Base(so.DeclarativeBase):  # noqa: F841
