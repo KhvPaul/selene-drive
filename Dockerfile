@@ -7,14 +7,15 @@ RUN apt-get update --fix-missing && apt-get upgrade -qy
 RUN apt-get install -y --no-install-recommends build-essential gcc libpq-dev libcurl4-openssl-dev libssl-dev git
 ENV LANGUAGE en_US
 
+COPY ./README.md .
 COPY ./pyproject.toml .
 COPY ./poetry.lock .
 
 RUN pip install --upgrade pip && pip install poetry && poetry config virtualenvs.create false
 RUN if [ "$SERVICE_ENV" = "deploy" ]; then \
-        poetry install --only main --no-interaction --no-ansi; \
+        poetry install --only main --no-interaction --no-ansi --no-root; \
     else \
-        poetry install --no-interaction --no-ansi; \
+        poetry install --no-interaction --no-ansi --no-root; \
     fi
 
 FROM python-base as service

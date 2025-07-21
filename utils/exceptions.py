@@ -2,6 +2,8 @@ import http
 
 from fastapi.exceptions import HTTPException
 
+from schemas import enums
+
 
 class ObjectAlreadyExistsException(HTTPException):
     def __init__(self):
@@ -32,4 +34,21 @@ class NotFoundException(HTTPException):
         super(HTTPException, self).__init__(
             status_code=http.HTTPStatus.NOT_FOUND,
             detail="Not found",
+        )
+
+
+class RoverLandedInObstacleException(Exception):
+    ...
+
+
+class RoverBlockedByObstacleException(Exception):
+    def __init__(self, longitude: int, latitude: int, direction: enums.Direction):
+        super().__init__(f"Rover blocked by obstacle at ({longitude}, {latitude}, {direction})")
+
+
+class RoverBlockedByObstacleHTTPException(HTTPException):
+    def __init__(self, longitude: int, latitude: int, direction: enums.Direction):
+        super(HTTPException, self).__init__(
+            status_code=http.HTTPStatus.CONFLICT,
+            detail=f"Rover blocked by obstacle at ({longitude}, {latitude}, {direction})",
         )

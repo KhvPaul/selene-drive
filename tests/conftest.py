@@ -5,13 +5,13 @@ import typing as t
 import pytest
 import pytest_asyncio
 from fastapi import FastAPI
-from httpx import AsyncClient, ASGITransport
+from httpx import ASGITransport, AsyncClient
 from sqlalchemy import delete, future
 
 from main import app
 from utils.annotations import get_async_db_session
-from .utils import db as db_helper, utils as test_utils  # noqa: F401
 
+from .utils import db as db_helper
 
 pytestmark = pytest.mark.asyncio
 TEST_SKIP_CLEANUP_TABLES = []

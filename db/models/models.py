@@ -2,8 +2,9 @@ import sqlalchemy as sa
 from sqlalchemy import orm as so
 from sqlalchemy.dialects import postgresql as pg
 
-from .mixins import CreateTimeModelMixin, AutoIncrementPkMixin
 from schemas import enums
+
+from .mixins import AutoIncrementPkMixin, CreateTimeModelMixin
 
 
 class Base(so.DeclarativeBase):  # noqa: F841
@@ -13,6 +14,7 @@ class Base(so.DeclarativeBase):  # noqa: F841
 class RoverState(Base, AutoIncrementPkMixin, CreateTimeModelMixin):
     """
 
+    Triggers: - 2025_07_20__16-51__a81dc1afd560_add_prevent_rover_on_obstacle_trigger.py
     """
     __tablename__ = "rover_states"
 
@@ -44,8 +46,11 @@ class RoverStateToCommandInput(Base):
     )
 
 
-class Obstacle(Base, AutoIncrementPkMixin, CreateTimeModelMixin):
+class Obstacle(Base, CreateTimeModelMixin):
     __tablename__ = "obstacles"
+    __table_args__ = (
+        sa.PrimaryKeyConstraint("longitude", "latitude", name="longitude_latitude_pkey"),
+    )
 
     longitude: so.Mapped[int] = so.mapped_column(sa.Integer, nullable=False, comment="Rover current longitude")
     latitude: so.Mapped[int] = so.mapped_column(sa.Integer, nullable=False, comment="Rover current latitude")

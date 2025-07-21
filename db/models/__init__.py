@@ -1,3 +1,3 @@
-from .models import Base, RoverState, CommandInput, RoverStateToCommandInput, Obstacle
+from .models import Base, CommandInput, Obstacle, RoverState, RoverStateToCommandInput
 
-__all__ = ["Base", "RoverState", "CommandInput", "RoverStateToCommandInput", "Obstacle"]
+__all__ = ["Base", "CommandInput", "Obstacle", "RoverState", "RoverStateToCommandInput"]

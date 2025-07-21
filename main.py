@@ -4,7 +4,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from uvicorn_worker import UvicornWorker
 
 from config import settings
-from routers import app_router, internal_router
+from routers import rover_router, internal_router
 from utils.lifespan import lifespan
 
 
@@ -16,8 +16,8 @@ app = FastAPI(
 )
 app.openapi_version = "3.0.0"
 
-app.include_router(app_router.router, prefix=f"{settings.API_V1_STR}")
-app.include_router(internal_router.router, prefix=f"{settings.API_V1_STR}")
+app.include_router(rover_router.router, prefix=settings.API_V1_STR)
+app.include_router(internal_router.router, prefix=settings.API_V1_STR)
 
 
 app.add_middleware(

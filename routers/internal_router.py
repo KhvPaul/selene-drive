@@ -7,7 +7,6 @@ from managers.base_manager import BaseModelManager
 from schemas import common as pyd_mod_common
 from utils.annotations import AsyncSession
 
-
 manager = BaseModelManager()
 
 OK = {"message": "OK"}
