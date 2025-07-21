@@ -31,6 +31,7 @@ pytest-env = "^1.1.5"
 pytest-asyncio = "^1.1.0"
 faker = "^37.4.2"
 factory-boy = "^3.3.3"
+pytest-cov = "^6.2.1"
 
 
 [tool.ruff]
@@ -128,6 +129,8 @@ line-ending = "auto"
 "mixins.py" = ["A003", "N805"]
 
 [tool.pytest.ini_options]
+asyncio_mode = "auto"
+asyncio_default_fixture_loop_scope = "session"
 minversion = "6.0"
 addopts = "-ra -q"
 testpaths = ["tests"]
@@ -140,9 +143,15 @@ filterwarnings = [
     "ignore::UserWarning"
 ]
 env = [
-  "API_V1_STR=/api/v1",
-  "START_POSITION=[0,0]",
-  "START_DIRECTION=NORTH"
+    "API_V1_STR=/api/v1",
+    "START_POSITION=[0,0]",
+    "START_DIRECTION=NORTH",
+    # database
+    "POSTGRES_USER=test",
+    "POSTGRES_PASSWORD=test",
+    "POSTGRES_HOST=localhost",
+#    "POSTGRES_PORT=5432",
+    "POSTGRES_DB=selene-drive",
 ]
 
 [build-system]
