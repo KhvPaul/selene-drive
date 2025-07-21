@@ -6,7 +6,7 @@ from httpx import AsyncClient
 import sqlalchemy as sa
 from sqlalchemy.orm import scoped_session, sessionmaker  # noqa
 
-pytestmark = pytest.mark.asyncio
+pytestmark = pytest.mark.asyncio(loop_scope="session")
 
 
 async def some_async_func(a: int, b: int):

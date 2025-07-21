@@ -4,6 +4,7 @@ import typing as t
 
 import pytest
 import pytest_asyncio
+import uvloop
 from fastapi import FastAPI
 from httpx import ASGITransport, AsyncClient
 from sqlalchemy import delete, future
@@ -13,13 +14,13 @@ from utils.annotations import get_async_db_session
 
 from .utils import db as db_helper
 
-pytestmark = pytest.mark.asyncio
+pytestmark = pytest.mark.asyncio(loop_scope="session")
 TEST_SKIP_CLEANUP_TABLES = []
 
 
 @pytest.fixture(scope="session")
 def event_loop(request):
-    loop = asyncio.new_event_loop()
+    loop = uvloop.new_event_loop()
     asyncio.set_event_loop(loop)
     yield loop
     loop.close()
@@ -29,8 +30,6 @@ def event_loop(request):
 async def connection(event_loop):
     async with db_helper.test_database_session() as session_cls:
         app.dependency_overrides[get_async_db_session] = lambda: session_cls
-        # user this for set up default user for authorisation
-        # app.dependency_overrides[get_sub_checker] = lambda: constants.DEFAULT_USER_ID
         yield session_cls
 
 
@@ -42,14 +41,10 @@ async def clean_up_db(_session_cls):
             if "view" in model_cls.name:
                 # ignore POSTGRES VIEW tables
                 continue
-            if model_cls.name in TEST_SKIP_CLEANUP_TABLES:
-                continue
             smtp = delete(model_cls)
             await session.execute(smtp)
             await session.commit()
         for model_cls in db_helper.models_cls_generator():
-            if model_cls.name in TEST_SKIP_CLEANUP_TABLES:
-                continue
             smtp = future.select(model_cls)
             res = await session.execute(smtp)
             assert not res.scalars().all()
