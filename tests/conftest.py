@@ -48,7 +48,6 @@ async def clean_up_db(_session_cls):
             smtp = future.select(model_cls)
             res = await session.execute(smtp)
             assert not res.scalars().all()
-    # await populate_database.populate(_session_cls)
     yield _session_cls
 
 

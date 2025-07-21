@@ -43,11 +43,9 @@ START_DIRECTION=NORTH
 
 POSTGRES_USER=postgres
 POSTGRES_PASSWORD=postgres
-POSTGRES_HOST=localhost
+POSTGRES_HOST=database
 POSTGRES_PORT=5432
 POSTGRES_DB=selene-drive
-
-IN_CI=false
 ```
 
 ---
@@ -69,19 +67,13 @@ This will start:
 
 ## Database Migrations
 
-Manage the schema with Alembic:
-
-```bash
-# create a new revision
-poetry run alembic revision --autogenerate -m "your message"
-
-# apply migrations
-poetry run alembic upgrade head
-```
+Migrations will apply automatically
 
 ---
 
 ## Running the Server (without Docker)
+
+Change `.env` file to match local environment
 
 ```bash
 poetry install

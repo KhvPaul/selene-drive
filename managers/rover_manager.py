@@ -119,7 +119,7 @@ class ABCDataProvider(ABC):  # DataProvider
         pass
 
 
-class DBDataProvider(ABCDataProvider):  # DBDataProvider
+class DBDataProvider(ABCDataProvider):
     command_obj = None
     _rover_state_db_api = models_db_api.RoverStateDBAPI()
     _rover_state_to_command_input_db_api = models_db_api.RoverStateToCommandInputDBAPI()
