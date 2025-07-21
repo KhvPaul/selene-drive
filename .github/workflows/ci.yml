@@ -10,9 +10,9 @@ jobs:
       postgres:
         image: postgres:17.5
         env:
-          POSTGRES_USER: postgres
-          POSTGRES_PASSWORD: postgres
-          POSTGRES_DB: test_db
+          POSTGRES_USER: test
+          POSTGRES_PASSWORD: test
+          POSTGRES_DB: selene-drive
         ports:
           - 5432:5432
         options: >-
@@ -44,16 +44,18 @@ jobs:
       - name: Run Ruff Check
         run: poetry run ruff check . --diff
 
-      - name: Run tests with coverage
-        run: |
-          poetry run pytest \
-            --cov=. \
-            --cov-report=term-missing \
-            --cov-fail-under=75
+      - name: Run Tests & Coverage
         env:
           IN_CI: True
           POSTGRES_HOST: localhost
           POSTGRES_PORT: 5432
-          POSTGRES_USER: postgres
-          POSTGRES_PASSWORD: postgres
-          POSTGRES_DB: test_db
+          POSTGRES_USER: test
+          POSTGRES_PASSWORD: test
+          POSTGRES_DB: selene-drive
+        run: |
+          poetry run pytest \
+            --cov=. \
+            --cov-report=term-missing \
+            --cov-report=xml \
+            --cov-fail-under=75 \
+            tests
