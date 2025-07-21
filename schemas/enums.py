@@ -1,4 +1,5 @@
 import enum
+import typing as t
 
 
 class Direction(str, enum.Enum):
@@ -20,12 +21,13 @@ class Direction(str, enum.Enum):
                 return (1, 0) if forward else (-1, 0)
             case Direction.WEST:
                 return (-1, 0) if forward else (1, 0)
+        return 0, 0
 
-    def rotate(self, rotate_cmd: str) -> "Direction":
+    def rotate(self, rotate_cmd: str) -> t.Self:
         directions = [Direction.EAST, Direction.NORTH, Direction.WEST, Direction.SOUTH]
         idx = directions.index(self)
         if rotate_cmd == "L":
             return directions[(idx + 1) % 4]
-        elif rotate_cmd == "R":
+        if rotate_cmd == "R":
             return directions[(idx - 1) % 4]
         raise ValueError("Invalid rotate command")
